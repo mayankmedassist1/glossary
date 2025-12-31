@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Legend | India's Premium Grocery Marketplace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-soft: #ecfdf5;
+            --accent: #f59e0b;
+            --bg: #fdfdfd;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #f1f5f9;
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); color: var(--text-main); overflow-x: hidden; scroll-behavior: smooth; }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: var(--transition); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* --- Navigation --- */
+        .navbar {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 1rem;
+        }
+        .nav-container { max-width: 1300px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 0.6rem; text-decoration: none; letter-spacing: -0.5px; cursor: pointer; }
+        
+        /* --- Predictive Search Bar --- */
+        .search-wrapper { flex: 1; position: relative; max-width: 600px; height: 48px; }
+        .search-wrapper input { 
+            width: 100%; height: 100%; padding: 0 1rem 0 3.2rem; border-radius: var(--radius-md); 
+            border: 1px solid var(--border); background: #f8fafc; outline: none; transition: var(--transition);
+            font-size: 0.95rem; color: var(--text-main);
+        }
+        .search-wrapper input:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-soft); }
+        .search-wrapper i.search-icon { position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; z-index: 2; }
+
+        .search-placeholder-container {
+            position: absolute; left: 3.2rem; top: 0; height: 100%; width: 70%;
+            overflow: hidden; pointer-events: none; display: flex; align-items: center;
+        }
+        .placeholder-text {
+            position: absolute; color: var(--text-muted); white-space: nowrap;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s;
+            font-size: 0.9rem;
+        }
+        .placeholder-up { transform: translateY(-40px); opacity: 0; }
+        .placeholder-active { transform: translateY(0); opacity: 1; }
+        .placeholder-down { transform: translateY(40px); opacity: 0; }
+
+        .suggestions-dropdown {
+            position: absolute; top: 110%; left: 0; width: 100%; background: white;
+            border-radius: var(--radius-md); border: 1px solid var(--border);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); display: none;
+            overflow: hidden; z-index: 1001;
+        }
+        .suggestion-item { padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: 0.2s; border-bottom: 1px solid var(--border); }
+        .suggestion-item:hover { background: var(--primary-soft); }
+        .suggestion-img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
+
+        .nav-actions { display: flex; align-items: center; gap: 1rem; }
+        .icon-btn { 
+            width: 45px; height: 45px; border-radius: 50%; border: 1px solid var(--border); 
+            background: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; transition: var(--transition); position: relative;
+        }
+        .icon-btn:hover, .icon-btn.active { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+        .badge { position: absolute; top: -5px; right: -5px; background: var(--primary); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+
+        /* --- Global Components --- */
+        .back-nav { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-weight: 700; cursor: pointer; margin-bottom: 1.5rem; transition: 0.2s; font-size: 0.9rem; }
+        .back-nav:hover { color: var(--primary); }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 2rem 0 1.5rem; }
+        .section-header h2 { font-size: 1.8rem; font-weight: 800; }
+
+        /* --- Hero --- */
+        .hero-section {
+            padding: 3rem 1rem; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            border-radius: 0 0 4rem 4rem; margin-bottom: 2rem; position: relative; overflow: hidden;
+        }
+        .hero-content h1 { font-size: 3.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.2rem; color: #064e3b; letter-spacing: -1px; }
+
+        /* --- Category Section --- */
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .category-item { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; cursor: pointer; transition: var(--transition); }
+        .cat-icon { width: 80px; height: 80px; border-radius: 24px; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; border: 1px solid var(--border); box-shadow: var(--shadow); transition: var(--transition); }
+        .category-item:hover .cat-icon { transform: translateY(-5px); background: var(--primary-soft); border-color: var(--primary); }
+        .category-item span { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+
+        /* --- Product Cards --- */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2rem; }
+        .product-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; transition: var(--transition); position: relative; cursor: pointer; }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); border-color: var(--primary); }
+        .img-wrapper { overflow: hidden; position: relative; background: #f8fafc; }
+        .product-image { width: 100%; height: 240px; object-fit: cover; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+        .product-card:hover .product-image { transform: scale(1.15) rotate(1deg); }
+        .discount-tag { position: absolute; top: 1rem; left: 1rem; background: #ef4444; color: white; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; z-index: 2; }
+        
+        .p-content { padding: 1.25rem; }
+        .p-category { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--primary); margin-bottom: 0.4rem; display: block; }
+        .p-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main); height: 2.8rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .p-footer { display: flex; align-items: center; justify-content: space-between; }
+        .p-price { font-size: 1.2rem; font-weight: 800; }
+        .p-old-price { font-size: 0.85rem; color: var(--text-muted); text-decoration: line-through; margin-left: 0.4rem; }
+        .btn-add { background: var(--primary); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; gap: 0.5rem; }
+
+        /* --- Detail Layout --- */
+        .detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 1rem; align-items: start; }
+        .detail-img-box { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; position: sticky; top: 120px; box-shadow: var(--shadow); }
+        .detail-img-box img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+        .detail-info h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main); }
+        .detail-price-box { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; }
+        .detail-price { font-size: 2.2rem; font-weight: 800; color: var(--primary); }
+        .detail-discount { background: #fef2f2; color: #ef4444; padding: 0.4rem 0.8rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; }
+        .delivery-pill { display: inline-flex; align-items: center; gap: 0.5rem; background: #fffbeb; color: #92400e; padding: 0.5rem 1rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        /* --- Cart View --- */
+        .cart-layout { display: grid; grid-template-columns: 1fr 400px; gap: 3rem; margin-top: 2rem; }
+        .cart-items { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 2rem; }
+        .cart-item { display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem 0; border-bottom: 1px solid var(--border); transition: 0.3s; }
+        .cart-item-img { width: 90px; height: 90px; border-radius: var(--radius-md); object-fit: cover; background: #f1f5f9; }
+        .qty-controls { display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 0.5rem 0.8rem; border-radius: 50px; border: 1px solid var(--border); }
+        .qty-btn { background: none; border: none; font-weight: 800; cursor: pointer; color: var(--text-main); font-size: 1.1rem; width: 24px; }
+        .order-summary { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 2rem; position: sticky; top: 120px; box-shadow: var(--shadow); }
+
+        /* --- Profile Page --- */
+        .profile-layout { max-width: 800px; margin: 1rem auto; display: grid; gap: 2rem; }
+        .profile-card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 2.5rem; box-shadow: var(--shadow); }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+
+        /* --- Success Overlay --- */
+        .success-overlay { position: fixed; inset: 0; background: white; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .success-icon { font-size: 5rem; color: var(--primary); margin-bottom: 2rem; animation: bounce 1s infinite alternate; }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-20px); } }
+
+        /* --- Toast --- */
+        .toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 2000; }
+        .toast { background: #1e293b; color: white; padding: 1rem 1.5rem; border-radius: var(--radius-md); transform: translateX(120%); transition: 0.4s; display: flex; align-items: center; gap: 0.8rem; font-weight: 600; }
+        .toast.show { transform: translateX(0); }
+
+        @media (max-width: 900px) {
+            .cart-layout, .detail-layout { grid-template-columns: 1fr; }
+            .hero-content h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="app.navigate('home')">
+                <i class="ph-fill ph-crown"></i> Local Legend
+            </div>
+            <div class="search-wrapper" id="search-wrapper">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="main-search-input" oninput="app.handleSearch(this.value)" onfocus="app.hidePlaceholder()" onblur="app.showPlaceholder()" onkeydown="if(event.key === 'Enter') app.navigate('listings')">
+                <div class="search-placeholder-container" id="placeholder-container">
+                    <span class="placeholder-text placeholder-active" id="placeholder-text">Search fresh atta...</span>
+                </div>
+                <div class="suggestions-dropdown" id="suggestions-box"></div>
+            </div>
+            <div class="nav-actions">
+                <button class="icon-btn" id="profile-btn" onclick="app.navigate('profile')"><i class="ph ph-user"></i></button>
+                <button class="icon-btn" onclick="app.navigate('cart')"><i class="ph ph-shopping-cart-simple"></i><span class="badge" id="cart-badge">0</span></button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="app-mount" class="container" style="padding-bottom: 5rem; padding-top: 2rem;"></main>
+
+    <div class="success-overlay" id="success-screen">
+        <i class="ph-fill ph-check-circle success-icon"></i>
+        <h1>Order Confirmed!</h1>
+        <p style="color: var(--text-muted); margin: 1rem 0 3rem;">Arriving at your location in 8 mins.</p>
+        <button class="btn-add" style="padding: 1.2rem 3rem;" onclick="app.resetAndHome()">Back to Home</button>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        const MOCK = {
+            user: { name: "Rahul Sharma", email: "rahul.sharma@example.com", phone: "+91 98765 43210", address: "Flat 402, Shiv Shanti Apartment, Andheri East, Mumbai, Maharashtra 400069", memberSince: "Jan 2024" },
+            placeholders: ["Search for Aashirvaad Atta...", "Search for Amul Butter...", "Search for Maggi Noodles...", "Search for Tata Salt...", "Search for Alphonso Mangoes..."],
+            categories: [
+                { id: 'cat1', name: 'Flour & Rice', icon: '🌾' },
+                { id: 'cat2', name: 'Dairy & Eggs', icon: '🥛' },
+                { id: 'cat3', name: 'Vegetables', icon: '🥦' },
+                { id: 'cat4', name: 'Fruits', icon: '🥭' },
+                { id: 'cat5', name: 'Spices & Oil', icon: '🌶️' },
+                { id: 'cat6', name: 'Snacks', icon: '🥨' }
+            ],
+            products: [
+                { id: 1, name: 'Aashirvaad Atta (5kg)', price: 245, oldPrice: 280, cat: 'Flour & Rice', img: '1.jpg', desc: 'Superior quality whole wheat flour made with a traditional chakki-grinding process.', delivery: '8 mins' },
+                { id: 2, name: 'Amul Salted Butter (500g)', price: 275, oldPrice: 290, cat: 'Dairy & Eggs', img: '2.jpg', desc: 'The taste of India. Pure milk butter that adds richness to every dish.', delivery: '10 mins' },
+                { id: 3, name: 'Maggi 2-Min Noodles (Pack of 12)', price: 168, oldPrice: 180, cat: 'Snacks', img: '3.jpg', desc: 'Indias favorite instant noodles with that signature masala taste.', delivery: '12 mins' },
+                { id: 4, name: 'Fresh Paneer (200g)', price: 85, oldPrice: 100, cat: 'Dairy & Eggs', img: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&h=600&fit=crop', desc: 'Soft and creamy malai paneer, perfect for curry and grilling.', delivery: '15 mins' },
+                { id: 5, name: 'Tata Salt (1kg)', price: 28, oldPrice: 32, cat: 'Spices & Oil', img: '4.webp', desc: 'Desh ka Namak. Vacuum evaporated iodized salt.', delivery: '7 mins' },
+                { id: 6, name: 'Alphonso Mangoes (1 Dozen)', price: 1200, oldPrice: 1500, cat: 'Fruits', img: '5.webp', desc: 'King of Mangoes from Ratnagiri. Sweet, pulpy, and aromatic.', delivery: '20 mins' },
+                { id: 7, name: 'Fortune Sunflower Oil (1L)', price: 145, oldPrice: 160, cat: 'Spices & Oil', img: '6.webp', desc: 'Light and healthy cooking oil, enriched with Vitamin A & D.', delivery: '10 mins' },
+                { id: 8, name: 'Daawat Basmati Rice (1kg)', price: 115, oldPrice: 140, cat: 'Flour & Rice', img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=600&fit=crop', desc: 'Long-grain aromatic basmati rice for that perfect biryani.', delivery: '15 mins' },
+                { id: 9, name: 'Everest Garam Masala (100g)', price: 72, oldPrice: 85, cat: 'Spices & Oil', img: '7.webp', desc: 'A rich blend of various spices to bring authentic Indian flavor to your kitchen.', delivery: '12 mins' },
+                { id: 10, name: 'Red Onions (1kg)', price: 45, oldPrice: 60, cat: 'Vegetables', img: '8.webp', desc: 'Fresh farm-picked red onions, essential for every Indian curry base.', delivery: '18 mins' },
+                { id: 11, name: 'Haldirams Bhujia (400g)', price: 95, oldPrice: 110, cat: 'Snacks', img: '9.webp', desc: 'Crispy and spicy gram flour noodles. The perfect teatime snack.', delivery: '10 mins' },
+                { id: 12, name: 'Amul Fresh Cream (250ml)', price: 65, oldPrice: 75, cat: 'Dairy & Eggs', img: '10.jpg', desc: 'Smooth and thick milk cream for desserts and rich gravies.', delivery: '14 mins' }
+            ]
+        };
+
+        const app = {
+            state: { view: 'home', cart: [], search: '', categoryFilter: 'All', currentProductId: null },
+
+            init() {
+                this.startPlaceholderLoop();
+                this.render();
+                this.updateCartBadge();
+                this.initScrollReveal();
+                this.initClickOutside();
+            },
+
+            startPlaceholderLoop() {
+                let idx = 0;
+                setInterval(() => {
+                    const container = document.getElementById('placeholder-container');
+                    const searchInput = document.getElementById('main-search-input');
+                    if (!container || document.activeElement === searchInput || searchInput.value !== '') return;
+                    const current = document.getElementById('placeholder-text');
+                    if(!current) return;
+                    current.classList.add('placeholder-up');
+                    setTimeout(() => {
+                        current.remove();
+                        idx = (idx + 1) % MOCK.placeholders.length;
+                        const next = document.createElement('span');
+                        next.id = 'placeholder-text';
+                        next.className = 'placeholder-text placeholder-down';
+                        next.innerText = MOCK.placeholders[idx];
+                        container.appendChild(next);
+                        setTimeout(() => { next.classList.remove('placeholder-down'); next.classList.add('placeholder-active'); }, 50);
+                    }, 600);
+                }, 4000);
+            },
+
+            hidePlaceholder() { const el = document.getElementById('placeholder-text'); if(el) el.style.opacity = '0'; },
+            showPlaceholder() { const val = document.getElementById('main-search-input').value; const el = document.getElementById('placeholder-text'); if(el && val === '') el.style.opacity = '1'; },
+
+            initClickOutside() {
+                document.addEventListener('click', (e) => {
+                    if(!e.target.closest('#search-wrapper')) document.getElementById('suggestions-box').style.display = 'none';
+                });
+            },
+
+            handleSearch(val) {
+                this.state.search = val.toLowerCase();
+                const box = document.getElementById('suggestions-box');
+                if (val.length >= 1) {
+                    const matches = MOCK.products.filter(p => p.name.toLowerCase().includes(this.state.search)).slice(0, 6);
+                    if (matches.length > 0) {
+                        box.innerHTML = matches.map(p => `<div class="suggestion-item" onclick="app.selectSuggestion(${p.id})"><img src="${p.img}" class="suggestion-img"><div style="flex:1"><div style="font-weight:700; font-size:0.9rem">${p.name}</div><div style="font-size:0.75rem; color:var(--text-muted)">${p.cat}</div></div></div>`).join('');
+                        box.style.display = 'block';
+                    } else box.style.display = 'none';
+                } else box.style.display = 'none';
+                if(this.state.view === 'listings') this.render();
+            },
+
+            selectSuggestion(productId) {
+                document.getElementById('main-search-input').value = MOCK.products.find(p => p.id === productId).name;
+                document.getElementById('suggestions-box').style.display = 'none';
+                this.navigate('detail', { id: productId });
+            },
+
+            navigate(view, params = {}) {
+                this.state.view = view;
+                if(params.cat) this.state.categoryFilter = params.cat;
+                else if(view === 'home') this.state.categoryFilter = 'All';
+                if(params.id) this.state.currentProductId = params.id;
+                this.render();
+                window.scrollTo(0,0);
+                this.initScrollReveal();
+            },
+
+            initScrollReveal() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            },
+
+            render() {
+                const mount = document.getElementById('app-mount');
+                mount.innerHTML = '';
+                document.getElementById('profile-btn').classList.toggle('active', this.state.view === 'profile');
+
+                if (this.state.view === 'home') this.renderHome(mount);
+                else if (this.state.view === 'listings') this.renderListings(mount);
+                else if (this.state.view === 'cart') this.renderCart(mount);
+                else if (this.state.view === 'detail') this.renderDetail(mount);
+                else if (this.state.view === 'profile') this.renderProfile(mount);
+            },
+
+            renderHome(mount) {
+                mount.innerHTML = `
+                    <section class="hero-section reveal">
+                        <div class="hero-content">
+                            <h1>Local Legend Grocery</h1>
+                            <p>India's freshest essentials delivered fast.</p>
+                        </div>
+                    </section>
+                    <div class="section-header reveal"><h2>Categories</h2></div>
+                    <div class="category-grid reveal">
+                        ${MOCK.categories.map(cat => `<div class="category-item" onclick="app.navigate('listings', { cat: '${cat.name}' })"><div class="cat-icon">${cat.icon}</div><span>${cat.name}</span></div>`).join('')}
+                    </div>
+                    <div class="section-header reveal"><h2>Local Favorites</h2></div>
+                    <div class="card-grid">${MOCK.products.map(p => this.productCard(p)).join('')}</div>
+                `;
+            },
+
+            renderListings(mount) {
+                let items = MOCK.products.filter(i => (this.state.categoryFilter === 'All' || i.cat === this.state.categoryFilter) && i.name.toLowerCase().includes(this.state.search));
+                mount.innerHTML = `
+                    <div class="back-nav" onclick="app.navigate('home')"><i class="ph ph-arrow-left"></i> Back to Home</div>
+                    <div class="section-header reveal"><h2>${this.state.categoryFilter} Products</h2></div>
+                    <div class="card-grid">${items.length ? items.map(p => this.productCard(p)).join('') : '<p>No matching products.</p>'}</div>
+                `;
+            },
+
+            productCard(p) {
+                const discount = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+                return `
+                    <div class="product-card reveal" onclick="if(!event.target.closest('.btn-add')) app.navigate('detail', {id: ${p.id}})">
+                        ${discount > 0 ? `<div class="discount-tag">${discount}% OFF</div>` : ''}
+                        <div class="img-wrapper"><img src="${p.img}" class="product-image"></div>
+                        <div class="p-content">
+                            <span class="p-category">${p.cat}</span>
+                            <h3 class="p-title">${p.name}</h3>
+                            <div class="p-footer">
+                                <div><span class="p-price">₹${p.price}</span><span class="p-old-price">₹${p.oldPrice}</span></div>
+                                <button class="btn-add" onclick="app.addToCart(${p.id})"><i class="ph ph-plus"></i> Add</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderDetail(mount) {
+                const p = MOCK.products.find(p => p.id === parseInt(this.state.currentProductId));
+                const discount = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+                mount.innerHTML = `
+                    <div class="back-nav" onclick="app.navigate('home')"><i class="ph ph-arrow-left"></i> Back to Home</div>
+                    <div class="detail-layout reveal">
+                        <div class="detail-img-box"><img src="${p.img}" alt="${p.name}"></div>
+                        <div class="detail-info">
+                            <div class="delivery-pill"><i class="ph-fill ph-timer"></i> Arriving in ${p.delivery}</div>
+                            <h1>${p.name}</h1>
+                            <span class="p-category" style="margin-bottom: 1rem; display: block;">Category: ${p.cat}</span>
+                            <div class="detail-price-box">
+                                <div class="detail-price">₹${p.price}</div>
+                                <div style="text-decoration: line-through; color: var(--text-muted); font-size: 1.2rem;">₹${p.oldPrice}</div>
+                                <div class="detail-discount">${discount}% OFF</div>
+                            </div>
+                            <p class="detail-desc">${p.desc}</p>
+                            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem; border: 1px dashed var(--border);">
+                                <h4 style="margin-bottom: 0.5rem;"><i class="ph ph-info"></i> Product Specifications</h4>
+                                <ul style="list-style: none; font-size: 0.9rem; color: var(--text-muted); display: grid; gap: 0.5rem;">
+                                    <li>• 100% Genuine and Locally Sourced</li>
+                                    <li>• Packed with extreme hygiene</li>
+                                    <li>• Long Shelf Life Guaranteed</li>
+                                </ul>
+                            </div>
+                            <button class="btn-add" style="width: 100%; height: 60px; justify-content: center; font-size: 1.1rem;" onclick="app.addToCart(${p.id})">
+                                <i class="ph ph-shopping-cart-simple"></i> Add to Basket
+                            </button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderProfile(mount) {
+                mount.innerHTML = `
+                    <div class="back-nav" onclick="app.navigate('home')"><i class="ph ph-arrow-left"></i> Back to Home</div>
+                    <div class="profile-layout reveal">
+                        <div class="profile-card">
+                            <div class="profile-avatar">${MOCK.user.name.charAt(0)}</div>
+                            <h2>${MOCK.user.name}</h2>
+                            <p style="color: var(--text-muted); margin-bottom: 2rem;">${MOCK.user.email}</p>
+                            <div style="text-align: left; background: #f8fafc; padding: 1.5rem; border-radius: 16px;">
+                                <div style="margin-bottom: 1rem;"><span style="color:var(--text-muted); font-size:0.8rem;">MOBILE</span><div style="font-weight:800;">${MOCK.user.phone}</div></div>
+                                <div><span style="color:var(--text-muted); font-size:0.8rem;">ADDRESS</span><div style="font-weight:800;">${MOCK.user.address}</div></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderCart(mount) {
+                if (!this.state.cart.length) {
+                    mount.innerHTML = `<div class="hero-section reveal" style="padding: 6rem 0;"><h2>Basket is empty.</h2><button class="btn-add" style="margin: 2rem auto" onclick="app.navigate('home')">Go Shop</button></div>`;
+                    return;
+                }
+                const subtotal = this.state.cart.reduce((a, b) => a + (b.price * b.qty), 0);
+                mount.innerHTML = `
+                    <div class="back-nav" onclick="app.navigate('home')"><i class="ph ph-arrow-left"></i> Back to Home</div>
+                    <div class="cart-layout reveal">
+                        <div class="cart-items">
+                            ${this.state.cart.map(item => `
+                                <div class="cart-item">
+                                    <img src="${item.img}" class="cart-item-img">
+                                    <div style="flex:1">
+                                        <h4>${item.name}</h4>
+                                        <div style="font-weight: 800; color: var(--primary)">₹${(item.price * item.qty)}</div>
+                                    </div>
+                                    <div class="qty-controls">
+                                        <button class="qty-btn" onclick="app.updateQty(${item.id}, -1)">-</button>
+                                        <span style="font-weight:700;">${item.qty}</span>
+                                        <button class="qty-btn" onclick="app.updateQty(${item.id}, 1)">+</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-summary">
+                            <h3 style="margin-bottom: 1.5rem;">Bill Summary</h3>
+                            <div class="summary-row"><span>Total Items</span><span>${this.state.cart.length}</span></div>
+                            <div class="summary-row"><span>Govt Taxes</span><span>₹${Math.round(subtotal * 0.05)}</span></div>
+                            <div style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; font-size: 1.4rem; font-weight: 800; display: flex; justify-content: space-between;">
+                                <span>To Pay</span><span>₹${Math.round(subtotal * 1.05)}</span>
+                            </div>
+                            <button class="btn-add" style="width: 100%; height: 60px; margin-top: 2rem; justify-content: center;" onclick="app.processCheckout()">Place Order</button>
+                        </div>
+                    </div>
+                `;
+            },
+
+            addToCart(id) {
+                const product = MOCK.products.find(p => p.id === id);
+                const existing = this.state.cart.find(i => i.id === id);
+                if (existing) existing.qty++;
+                else this.state.cart.push({ ...product, qty: 1 });
+                this.updateCartBadge();
+                this.showToast(`Added ${product.name} to basket`);
+            },
+
+            updateQty(id, delta) {
+                const item = this.state.cart.find(i => i.id === id);
+                if (item) {
+                    item.qty += delta;
+                    if (item.qty <= 0) this.state.cart = this.state.cart.filter(i => i.id !== id);
+                    this.updateCartBadge();
+                    this.render();
+                }
+            },
+
+            updateCartBadge() { document.getElementById('cart-badge').innerText = this.state.cart.reduce((a, b) => a + b.qty, 0); },
+            processCheckout() {
+                const btn = event.currentTarget;
+                btn.innerHTML = `<i class="ph ph-circle-notch ph-spin"></i> Processing...`;
+                setTimeout(() => { document.getElementById('success-screen').style.display = 'flex'; }, 1500);
+            },
+            resetAndHome() { this.state.cart = []; this.updateCartBadge(); document.getElementById('success-screen').style.display = 'none'; this.navigate('home'); },
+            showToast(msg) {
+                const toast = document.createElement('div'); toast.className = 'toast';
+                toast.innerHTML = `<i class="ph-fill ph-check-circle" style="color:var(--primary)"></i> ${msg}`;
+                document.getElementById('toast-container').appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 50);
+                setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+            }
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+</html>
